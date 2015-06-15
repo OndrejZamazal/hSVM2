@@ -1,0 +1,7 @@
+min_instances_for_class|100
+sti_types_dataset|en.lhd.inference.2015.nt.gz
+DBpedia_ontology|ontology.owl
+lang_short_abstracts|enwiki-20150205-short-abstracts.nt.gz
+lang_article_categories|enwiki-20150205-article-categories.nt.gz
+#for English non-transitive, for other languages transitive one:
+lang_instance_types|enwiki-20150205-instance-types.nt.gz

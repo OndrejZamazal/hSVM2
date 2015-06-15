@@ -1,0 +1,6 @@
+hypoutput_log_dbpedia_manualexclusion|"en.hypoutput.log.dbpedia.manualexclusion.nt"
+sti_debug|en.sti.debug
+debug_hSVM|en.debug.hSVM
+DBpedia_ontology|ontology.owl
+sti_types_dataset|en.lhd.inference.2015.nt.gz
+sti_debug_stiUnsure|en.sti.debug_stiUnsure_0.15.csv
