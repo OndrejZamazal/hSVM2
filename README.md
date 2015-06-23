@@ -1,4 +1,4 @@
-hSVM2
+hSVMa
 =====
 Automation of hSVM classifier
 
@@ -17,8 +17,8 @@ TODO:
   + Mapping-based Types transitive (for other languages)
 
 ## Usage:
-git clone https://github.com/OndrejZamazal/hSVM2/
-cd hSVM2
+git clone https://github.com/OndrejZamazal/hSVMa/
+cd hSVMa
 TODO:
 
 
