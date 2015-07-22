@@ -1,6 +1,6 @@
 hSVMa
 =====
-Automation of hSVM classifier
+Automation of hSVM classifier as hierarchical Support Vector Machines classifier for classification DBpedia type for DBpedia entity.
 
 It returns:
 + **hSVM dataset** - types of resources are DBpedia ontology classes built on hSVM algorithm
