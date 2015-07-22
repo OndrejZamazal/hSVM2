@@ -13,18 +13,20 @@ import com.hp.hpl.jena.ontology.OntModel;
 import com.hp.hpl.jena.ontology.OntModelSpec;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 
+import cz.vse.swoe.hsvm.hSVMSTI;
+
 /**
  * Created by svabo 2015.
  */
 
 public class hSVMSTIrun {
 	
-	private String hypoutput_log_dbpedia_manualexclusion = "en.hypoutput.log.dbpedia.manualexclusion.nt";
-	private String sti_debug = "en.sti.debug";
-	private String debug_hSVM = "en.debug.hSVM";
-	private String DBpedia_ontology = "ontology.owl";
-	private String sti_types_dataset = "en.lhd.inference.2015.nt.gz";
-	private String sti_debug_stiUnsure = "en.sti.debug_stiUnsure_0.15.csv";
+	public String hypoutput_log_dbpedia_manualexclusion = "en.hypoutput.log.dbpedia.manualexclusion.nt";
+	public String sti_debug = "en.sti.debug";
+	public String debug_hSVM = "en.debug.hSVM";
+	public String DBpedia_ontology = "ontology.owl";
+	public String sti_types_dataset = "en.lhd.inference.2015.nt.gz";
+	public String sti_debug_stiUnsure = "en.sti.debug_stiUnsure_0.15.csv";
 	
 	public hSVMSTIrun(boolean res) {
 		try {
@@ -74,6 +76,19 @@ public class hSVMSTIrun {
 		catch(Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public void mergehSVMSTI(String lhd_types, String debug_sti_input, String debug_hSVM_input, String ontology) {
+		//parameters goes arguments of mergehSVMSTI method 		
+		//String lhd_types, String debug_sti_input, String debug_hSVM_input, String ontology
+		//workflow:
+		//1. preprocess DBpedia ontology
+		this.init_ontology_cache(ontology);
+		//2. merge hSVM input with STI input
+		hSVMSTI h = new hSVMSTI(lhd_types, debug_sti_input);
+		h.fuse(debug_hSVM_input);
+		//3. removing working directory:
+		//this.finish();
 	}
 	
 	//11-06-15, merge only if sti is unsure 
@@ -127,6 +142,7 @@ public class hSVMSTIrun {
 		hSVMSTIrun h = new hSVMSTIrun(false);
 		h.set_parameters("parameters-hSVM2STI.txt");
 		h.mergehSVMSTI_unsure_sti(h.hypoutput_log_dbpedia_manualexclusion, h.sti_debug, h.debug_hSVM, h.DBpedia_ontology, h.sti_types_dataset, h.sti_debug_stiUnsure);
+		//h.mergehSVMSTI(h.hypoutput_log_dbpedia_manualexclusion, h.sti_debug, h.debug_hSVM, h.DBpedia_ontology);
 	}
 
 }

@@ -17,6 +17,9 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Statement;
 
+import cz.vse.swoe.hsvm.ProbClass2;
+import cz.vse.swoe.hsvm.ProbClass3;
+
 /**
  * Created by svabo 2015.
  */
@@ -135,6 +138,108 @@ public class hSVMSTI {
 		}
 			
 		return(new ProbClass2(max_type,max_prob,max_prob));
+	}
+	
+	public void fuse(String input_file) {
+		try {
+			BufferedReader fp = new BufferedReader(new FileReader(input_file));
+			ArrayList<String> hSVM_types = new ArrayList<String>(); 
+			HashMap<String, ProbClass3> hSVM_results = null;
+			HashMap<String, ProbClass3> sti_results = null;
+			String resource = "";
+			
+			//PrintWriter toFile = new PrintWriter(new FileWriter("res/"+"en.hSVMSTI.nt", false));
+			PrintWriter toFile = new PrintWriter(new FileWriter("res/"+"xx.hSVMSTI.nt", false));
+			//PrintWriter toFile = new PrintWriter(new FileWriter("res/"+"nl.hSVMSTI.nt", false));
+			
+			while(true)
+			{
+				String line = fp.readLine();
+				
+				if(line == null) break;
+				
+				if(line.matches("#.*")) {
+					//getting names of classes
+					StringTokenizer st = new StringTokenizer(line.replaceAll("#", "")," ");
+					while(st.hasMoreTokens()) {
+						hSVM_types.add(st.nextToken());
+					}					
+					continue;
+				}
+								
+				//init all types from hSVM results
+				hSVM_results = new HashMap<String, ProbClass3>();
+				resource = line.substring(1, line.lastIndexOf(">"));
+				line = line.substring(line.lastIndexOf(">")+2);
+				StringTokenizer st = new StringTokenizer(line," ");
+				int i=0;
+				while(st.hasMoreTokens()) {					
+					String prob = st.nextToken();
+					hSVM_results.put(hSVM_types.get(i), new ProbClass3(new Double(prob)));
+					i++;
+				}
+				
+				//sti - combine and propagate sti confidences to ml
+				sti_results = new HashMap<String, ProbClass3>();
+				//02-02-15, sometimes there is no mapping to types
+				if (this.lhdtype_to_sti.get(this.resource_lhdtype.get(resource))!=null)
+					sti_results = this.lhdtype_to_sti.get(this.resource_lhdtype.get(resource));
+				
+				for(String type : sti_results.keySet()) {					
+					if(hSVM_results.containsKey(type.trim())) {
+						hSVM_results.get(type).addProb(sti_results.get(type).prob_sum);					
+						//propagation to subclasses
+						if (this.ontCache.subtypesforSupertypes.containsKey(type)) {
+							//apply for get_subclasses(pc2.target_class)
+							for(String subclass : this.ontCache.subtypesforSupertypes.get(type)) {
+								//System.out.println("apply for subclass "+subclass);
+								if (hSVM_results.containsKey(subclass)) {
+									hSVM_results.get(subclass).addProb(sti_results.get(type).prob_sum);
+								}
+								else {									
+									//hSVM_results.put(subclass, sti_results.get(type));
+									hSVM_results.put(type, new ProbClass3(sti_results.get(type).prob_sum));
+								}
+							}
+						}
+					}
+					else {
+						hSVM_results.put(type, new ProbClass3(sti_results.get(type).prob_sum));
+						//propagation to subclasses
+						if (this.ontCache.subtypesforSupertypes.containsKey(type)) {
+							//apply for get_subclasses(pc2.target_class)
+							for(String subclass : this.ontCache.subtypesforSupertypes.get(type)) {
+								//System.out.println("apply for subclass "+subclass);
+								if (hSVM_results.containsKey(subclass)) {									
+									hSVM_results.get(subclass).addProb(sti_results.get(type).prob_sum);
+								}
+								else {
+									hSVM_results.put(subclass, new ProbClass3(sti_results.get(type).prob_sum));
+								}
+							}
+						}
+					}
+				}				
+				//System.out.println("After propagation:");
+				ProbClass2 fin_type= this.get_type_with_maximum_average(hSVM_results);
+				String result=fin_type.target_class;
+				String localName=resource.substring(resource.lastIndexOf("/")+1);
+				//for normal run:
+				localName=StringEscapeUtils.escapeEcmaScript(localName);
+				
+				//for normal run:
+				toFile.println("<http://dbpedia.org/resource/"+localName+"> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/"+result+"> .");
+				//for evaluating gs3
+				//toFile.println("http://dbpedia.org/resource/"+localName+";"+result+":xx");
+				toFile.flush();
+			}
+			fp.close();
+			toFile.close();
+			
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	//11-06-15, fuse only where sti is unsure variant 2 using e.g. en.lhd.inference.2015.nt.gz as mapping to sti file
